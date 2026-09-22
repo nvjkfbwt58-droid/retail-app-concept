@@ -3,7 +3,8 @@ const Motion=(()=>{
   const reduce=matchMedia('(prefers-reduced-motion: reduce)');
   const spring='cubic-bezier(.16,1,.3,1)';
   const active=new Set();let observer=null,frame=0,pointer=null,drag=null,dismiss=null;
-  const enabled=()=>!reduce.matches&&!document.hidden;
+  const touch=matchMedia('(max-width:600px), (pointer:coarse)');
+  const enabled=()=>!reduce.matches&&!touch.matches&&!document.hidden;
   function animate(el,frames,options={}){if(!el||!enabled())return null;const a=el.animate(frames,{duration:560,easing:spring,...options});active.add(a);a.finished.catch(()=>{}).finally(()=>active.delete(a));return a;}
   function capture(){return null;}
   function page(){if(!enabled())return;const el=document.querySelector('#app-content>.page');if(!el)return;el.getAnimations().forEach(a=>a.cancel());animate(el,[{opacity:.86,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'cubic-bezier(.2,.6,.3,1)'});}
