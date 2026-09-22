@@ -25,7 +25,7 @@ const Motion=(()=>{
  },{passive:true});
  document.addEventListener('pointermove',e=>{
   if(!scrub||e.pointerId!==scrub.id)return;const s=scrub,dx=e.clientX-s.startX,dy=e.clientY-s.startY;
-  if(!s.moved){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){finishScrub(true);return;}if(Math.abs(dx)<5)return;s.moved=true;s.host.setPointerCapture(s.id);s.host.classList.add('is-scrubbing');}
+  if(!s.moved){if(Math.abs(dx)<5)return;s.moved=true;s.host.setPointerCapture(s.id);s.host.classList.add('is-scrubbing');}
   const first=s.buttons[0],last=s.buttons[s.buttons.length-1];
   const x=Math.max(first.offsetLeft,Math.min(last.offsetLeft,s.origin+dx/s.scale));
   s.marker.style.transform=`translateX(${x}px)`;
@@ -47,3 +47,5 @@ const Motion=(()=>{
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});reduce.addEventListener('change',()=>{if(reduce.matches)stop();});
  return {page,nav,animate,success,capture:()=>null,origin:()=>null,morph:()=>{},observe:()=>{},setDismiss:fn=>dismiss=fn,closed:()=>{const d=document.querySelector('#app-dialog');if(d)d.style.translate='';}};
 })();
+// Stop decorative motion when the page is not visible.
+document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('page-hidden',document.hidden));
