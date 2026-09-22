@@ -1,0 +1,20 @@
+/* Depth and continuity, without tilting products or changing phone geometry. */
+.motion-old-page{position:absolute;overflow:hidden;z-index:7;pointer-events:none;background:var(--paper);contain:layout paint}.motion-old-page *{animation:none!important;transition:none!important}.motion-page,.motion-page>.reveal-item{animation:none!important}.motion-await{opacity:0}.motion-old-page .motion-await{opacity:1}
+#app-content{transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .45s;transform-origin:center 40%}.device-screen:has(dialog[open])>#app-content{transform:scale(.965);opacity:.55;border-radius:25px}.device-screen:has(dialog[open])>#bottom-nav{opacity:.6}#bottom-nav{transition:opacity .4s}#bottom-nav button{position:relative;z-index:2}#bottom-nav .nav-liquid{position:absolute;left:0;top:8px;width:43px;height:33px;border-radius:12px;background:linear-gradient(130deg,#dce7ce99,#e5e8d36b);box-shadow:inset 0 1px 0 #ffffffd9,0 3px 8px #566b3310;pointer-events:none;z-index:0;transition:transform .65s cubic-bezier(.22,1.35,.35,1)}#bottom-nav .nav-tap>span{animation:none}
+.product-scene .bottle-object,.product-scene .glass-mark,.product-art .product-scene img.scene-glass,.detail-photo .product-scene img.scene-glass{translate:var(--motion-x,0px) var(--motion-y,0px);transition:translate .45s cubic-bezier(.16,1,.3,1)}.product-art .product-scene img.scene-poster,.detail-photo .product-scene img.scene-poster{translate:calc(var(--motion-x,0px)*-.35) calc(var(--motion-y,0px)*-.35);transition:translate .65s cubic-bezier(.16,1,.3,1);scale:1.06}.discovery>img{translate:calc(var(--motion-x,0px)*-.45) calc(var(--motion-y,0px)*-.45);scale:1.04;transition:translate .65s cubic-bezier(.16,1,.3,1)}.loyalty{background:radial-gradient(ellipse at var(--light-x,85%) var(--light-y,10%),#5d7b5760 0%,transparent 57%),linear-gradient(125deg,#293e33,#172b22)}
+.dialog-handle{cursor:grab;touch-action:none;min-height:15px;padding-top:0}.dialog-handle:active{cursor:grabbing}dialog::backdrop{background:#111b13a6;backdrop-filter:blur(3px)}.motion-success-ring{position:absolute;inset:0;border:2px solid #cecf8a;border-radius:inherit;pointer-events:none}.chip,.segmented button{transition:background .3s,color .3s,box-shadow .3s}.chip.active{box-shadow:0 4px 11px #2d45281f}.personal-coupon{transition:box-shadow .45s,scale .45s cubic-bezier(.16,1,.3,1)}.personal-coupon:hover{box-shadow:0 13px 28px -15px #382e2160;scale:1.008}.personal-coupon:active{scale:.985}
+@media(prefers-reduced-motion:reduce){.motion-await{opacity:1}.motion-old-page{display:none}#app-content,#bottom-nav .nav-liquid,.product-scene .bottle-object,.product-scene .glass-mark,.product-art .product-scene img.scene-glass,.detail-photo .product-scene img.scene-glass,.product-art .product-scene img.scene-poster,.detail-photo .product-scene img.scene-poster,.discovery>img,.personal-coupon{transition:none!important;translate:none;scale:none}.device-screen:has(dialog[open])>#app-content{transform:none}}
+
+/* Restrained revision: one short screen transition, no catalogue layer duplication. */
+.page.entering>*.reveal-item{animation:none!important}
+.product-scene .bottle-object,.product-scene .glass-mark,.product-art .product-scene img.scene-glass,.detail-photo .product-scene img.scene-glass,.product-art .product-scene img.scene-poster,.detail-photo .product-scene img.scene-poster{translate:none;scale:1}
+.product-card:hover .bottle-object{transform:translateX(-50%) translateY(-1px)}
+.bottle-object{transition:transform .65s ease-in-out}
+#app-content{transition:opacity .2s;transform:none!important}
+#bottom-nav .nav-liquid{transition:transform .28s ease-out}
+dialog::backdrop{backdrop-filter:none}
+
+.product-card:hover{transform:none}
+.product-card:hover .product-art img{transform:translateY(-1px)}
+.product-card:hover .product-art .product-scene img{transform:none}
+.product-card:hover .product-art .product-scene img.scene-glass{transform:translateX(-50%)}
