@@ -62,3 +62,13 @@ dialog{background:radial-gradient(ellipse at 100% 0,#e7d6b870,transparent 55%),l
 @media(prefers-reduced-transparency:reduce){#bottom-nav{background:#edf2e7;-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media(prefers-contrast:more){.product-card,.panel,.menu-group,.store-card,.service-shortcuts{border-color:#819179}#bottom-nav{background:#edf2e7;-webkit-backdrop-filter:none;backdrop-filter:none}#bottom-nav button{color:#354b32}}
 @media(prefers-reduced-motion:reduce){#bottom-nav .nav-liquid{transition:none!important}}
+
+/* The browser chrome and safe area share one exact top-edge colour. */
+.device-screen{background:linear-gradient(#edf0e7 0,rgba(237,240,231,0) 160px),radial-gradient(ellipse at 100% 6%,#e5c99180,transparent 48%),radial-gradient(ellipse at -15% 55%,#aabca580,transparent 58%),linear-gradient(155deg,#f5f4eb,#e5ebdf 65%,#efe8d9)!important}
+@media(max-width:600px){html,body,.studio,.device-stage,.device{background:#edf0e7!important}.device-screen{background:linear-gradient(#edf0e7 0,#edf0e7 env(safe-area-inset-top),rgba(237,240,231,0) calc(env(safe-area-inset-top) + 160px)),radial-gradient(ellipse at 100% 6%,#e5c99180,transparent 48%),radial-gradient(ellipse at -15% 55%,#aabca580,transparent 58%),linear-gradient(155deg,#f5f4eb,#e5ebdf 65%,#efe8d9)!important}}
+#bottom-nav{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+#bottom-nav.is-scrubbing{touch-action:none}
+#bottom-nav.is-scrubbing .nav-liquid{transition:none!important;background:linear-gradient(135deg,#ffffff80,#ffffff18 48%,#f7fff844);border-color:#ffffffed;box-shadow:inset 0 1px 1px #fff,inset 0 -1px 2px #7a95754d,0 3px 10px #24452621;scale:1.045 1.06}
+#bottom-nav.is-scrubbing button.active{color:#60705c}#bottom-nav.is-scrubbing button.scrub-target{color:#24472f}
+@media(prefers-reduced-motion:reduce){#bottom-nav.is-scrubbing .nav-liquid{scale:1}}
+@media(prefers-reduced-transparency:reduce){#bottom-nav.is-scrubbing .nav-liquid{background:#f5f8ef}}
