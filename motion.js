@@ -6,30 +6,27 @@ const Motion=(()=>{
  const running=new Set();let pageAnimation=null,press=null,drag=null,dismiss=null;
  const enabled=()=>!reduce.matches&&!document.hidden;
  function animate(el,frames,options={}){if(!el||!enabled())return null;const a=el.animate(frames,{duration:260,easing:ease,...options});running.add(a);a.finished.catch(()=>{}).finally(()=>running.delete(a));return a;}
- let outgoing=null,lastNav=null;
- function clearEntrance(){pageAnimation?.cancel();pageAnimation=null;if(outgoing){outgoing.remove();outgoing=null;}}
- function capture(){
-  clearEntrance();if(!enabled())return;
-  const pane=document.querySelector('#app-content'),old=pane?.querySelector(':scope>.page');if(!old)return;
-  const width=old.offsetWidth,top=old.offsetTop-pane.scrollTop,left=old.offsetLeft;
-  const layer=document.createElement('div');layer.className='page-departure';layer.inert=true;layer.setAttribute('aria-hidden','true');
-  Object.assign(layer.style,{top:pane.offsetTop+'px',height:pane.clientHeight+'px'});
-  old.removeAttribute('id');old.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
-  Object.assign(old.style,{position:'absolute',width:width+'px',left:left+'px',top:top+'px',margin:'0'});
-  layer.append(old);pane.parentElement.append(layer);outgoing=layer;
- }
+ let lastNav=null;
+ const entrances=new Set();
+ function clearEntrance(){for(const a of entrances)a.cancel();entrances.clear();pageAnimation?.cancel();pageAnimation=null;}
+ function capture(){clearEntrance();}
  function page(from,to){
-  pageAnimation?.cancel();
-  const pane=document.querySelector('#app-content');if(!enabled()||!pane){clearEntrance();return;}
-  const tabs=['home','catalog','card','benefits','profile'],isTab=tabs.includes(from)&&tabs.includes(to);
-  const back=to=== 'home'||(tabs.includes(to)&&!tabs.includes(from));
-  const enter=isTab?'0 10px':`${back?-22:26}px 0`,leave=isTab?'0 -12px':`${back?30:-26}px 0`;
-  const old=outgoing;
-  if(old){
-   const departure=animate(old,[{opacity:1,translate:'0 0',scale:'1'},{opacity:0,translate:leave,scale:'.985'}],{duration:isTab?280:330,easing:ease});
-   departure?.finished.catch(()=>{}).finally(()=>{old.remove();if(outgoing===old)outgoing=null;});
-  }
-  pageAnimation=animate(pane,[{opacity:0,translate:from?enter:'0 10px',scale:'.992'},{opacity:1,translate:'0 0',scale:'1'}],{duration:isTab?420:460,easing:'cubic-bezier(.16,1,.3,1)'});
+  clearEntrance();if(!enabled())return;
+  const pane=document.querySelector('#app-content'),root=pane?.querySelector(':scope>.page');if(!root)return;
+  const bounds=pane.getBoundingClientRect();
+  // Animate individual visible surfaces, never a full catalogue texture.
+  const candidates=[...root.children].flatMap(n=>n.matches('.product-grid,.horizontal-products,.extra-coupons,.service-shortcuts')?[...n.children]:[n]);
+  const visible=candidates.filter(n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>18&&r.bottom>bounds.top&&r.top<bounds.bottom;}).slice(0,12);
+  visible.forEach((node,i)=>{
+   const card=node.matches('button,.member-pass,.loyalty,.product-card,.panel,.menu-group');
+   const distance=card?24:16,blur=card?5:3;
+   const a=animate(node,[
+    {opacity:0,translate:`0 ${distance}px`,scale:card?'.987':'1',filter:`blur(${blur}px)`},
+    {opacity:1,translate:'0 2px',scale:'1',filter:'blur(.5px)',offset:.65},
+    {opacity:1,translate:'0 0',scale:'1',filter:'blur(0px)'}
+   ],{duration:560,delay:Math.min(i*38,228),easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
+   if(a){entrances.add(a);a.finished.catch(()=>{}).finally(()=>entrances.delete(a));}
+  });
  }
  document.addEventListener('wheel',clearEntrance,{passive:true});
  document.addEventListener('pointerdown',e=>{if(e.target.closest('#app-content'))clearEntrance();},{passive:true});
