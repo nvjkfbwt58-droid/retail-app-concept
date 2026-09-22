@@ -6,23 +6,35 @@ const Motion=(()=>{
  const running=new Set();let pageAnimation=null,press=null,drag=null,dismiss=null;
  const enabled=()=>!reduce.matches&&!document.hidden;
  function animate(el,frames,options={}){if(!el||!enabled())return null;const a=el.animate(frames,{duration:260,easing:ease,...options});running.add(a);a.finished.catch(()=>{}).finally(()=>running.delete(a));return a;}
- function clearEntrance(){pageAnimation?.cancel();pageAnimation=null;}
+ let outgoing=null,lastNav=null;
+ function clearEntrance(){pageAnimation?.cancel();pageAnimation=null;if(outgoing){outgoing.remove();outgoing=null;}}
+ function capture(){
+  clearEntrance();if(!enabled())return;
+  const pane=document.querySelector('#app-content'),old=pane?.querySelector(':scope>.page');if(!old)return;
+  const width=old.offsetWidth,top=old.offsetTop-pane.scrollTop,left=old.offsetLeft;
+  const layer=document.createElement('div');layer.className='page-departure';layer.inert=true;layer.setAttribute('aria-hidden','true');
+  Object.assign(layer.style,{top:pane.offsetTop+'px',height:pane.clientHeight+'px'});
+  old.removeAttribute('id');old.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  Object.assign(old.style,{position:'absolute',width:width+'px',left:left+'px',top:top+'px',margin:'0'});
+  layer.append(old);pane.parentElement.append(layer);outgoing=layer;
+ }
  function page(from,to){
-  clearEntrance();
-  const el=document.querySelector('#app-content>.page');if(!enabled()||!el)return;
-  const tabs=['home','catalog','card','benefits','profile'];
-  const a=tabs.indexOf(from),b=tabs.indexOf(to);
-  const direction=a>=0&&b>=0?Math.sign(b-a):0;
-  // One surface, one timing curve. No stagger, bounce, scaling, or hidden cards.
-  pageAnimation=animate(el,[
-   {opacity:from ? 0.88 : 0,translate:direction?`${direction*24}px 0`:'0 12px'},
-   {opacity:1,translate:'0 0'}
-  ],{duration:from?340:420,easing:'cubic-bezier(.16,1,.3,1)'});
+  pageAnimation?.cancel();
+  const pane=document.querySelector('#app-content');if(!enabled()||!pane){clearEntrance();return;}
+  const tabs=['home','catalog','card','benefits','profile'],isTab=tabs.includes(from)&&tabs.includes(to);
+  const back=to=== 'home'||(tabs.includes(to)&&!tabs.includes(from));
+  const enter=isTab?'0 10px':`${back?-22:26}px 0`,leave=isTab?'0 -12px':`${back?30:-26}px 0`;
+  const old=outgoing;
+  if(old){
+   const departure=animate(old,[{opacity:1,translate:'0 0',scale:'1'},{opacity:0,translate:leave,scale:'.985'}],{duration:isTab?280:330,easing:ease});
+   departure?.finished.catch(()=>{}).finally(()=>{old.remove();if(outgoing===old)outgoing=null;});
+  }
+  pageAnimation=animate(pane,[{opacity:0,translate:from?enter:'0 10px',scale:'.992'},{opacity:1,translate:'0 0',scale:'1'}],{duration:isTab?420:460,easing:'cubic-bezier(.16,1,.3,1)'});
  }
  document.addEventListener('wheel',clearEntrance,{passive:true});
  document.addEventListener('pointerdown',e=>{if(e.target.closest('#app-content'))clearEntrance();},{passive:true});
 
- function nav(){const host=document.querySelector('#bottom-nav'),b=host?.querySelector('button.active');if(!b)return;let marker=host.querySelector('.nav-liquid');if(!marker){marker=document.createElement('i');marker.className='nav-liquid';marker.setAttribute('aria-hidden','true');host.prepend(marker);}marker.style.width=b.offsetWidth+'px';marker.style.transform=`translateX(${b.offsetLeft}px)`;}
+ function nav(){const host=document.querySelector('#bottom-nav'),b=host?.querySelector('button.active');if(!b)return;let marker=host.querySelector('.nav-liquid');if(!marker){marker=document.createElement('i');marker.className='nav-liquid';marker.setAttribute('aria-hidden','true');host.prepend(marker);}if(lastNav&&lastNav!==b){animate(b.querySelector('svg'),[{translate:'0 0',scale:'1'},{translate:'0 -2px',scale:'1.1',offset:.38},{translate:'0 0',scale:'1'}],{duration:420});}lastNav=b;marker.style.width=b.offsetWidth+'px';marker.style.transform=`translateX(${b.offsetLeft}px)`;}
  // Scrub navigation without rendering intermediate screens under the finger.
  let scrub=null,suppressClickUntil=0;
  function finishScrub(cancelled=false){
@@ -60,7 +72,7 @@ const Motion=(()=>{
  function success(button){if(!button||!enabled())return;animate(button,[{scale:'.98'},{scale:'1.006',offset:.6},{scale:'1'}],{duration:260});}
  function stop(){clearEntrance();finishScrub(true);for(const a of running)a.cancel();running.clear();press=null;pageAnimation=null;if(drag)drag.dialog.style.translate='';drag=null;}
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});reduce.addEventListener('change',()=>{if(reduce.matches)stop();});
- return {page,nav,animate,success,capture:()=>null,origin:()=>null,morph:()=>{},observe:()=>{},setDismiss:fn=>dismiss=fn,closed:()=>{const d=document.querySelector('#app-dialog');if(d)d.style.translate='';}};
+ return {page,nav,animate,success,capture,origin:()=>null,morph:()=>{},observe:()=>{},setDismiss:fn=>dismiss=fn,closed:()=>{const d=document.querySelector('#app-dialog');if(d)d.style.translate='';}};
 })();
 // Stop decorative motion when the page is not visible.
 document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('page-hidden',document.hidden));
