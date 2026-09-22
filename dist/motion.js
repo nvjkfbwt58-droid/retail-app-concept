@@ -6,7 +6,29 @@ const Motion=(()=>{
  const running=new Set();let pageAnimation=null,press=null,drag=null,dismiss=null;
  const enabled=()=>!reduce.matches&&!document.hidden;
  function animate(el,frames,options={}){if(!el||!enabled())return null;const a=el.animate(frames,{duration:260,easing:ease,...options});running.add(a);a.finished.catch(()=>{}).finally(()=>running.delete(a));return a;}
- function page(from,to){pageAnimation?.cancel();const el=document.querySelector('#app-content>.page');if(!enabled()||!el)return;pageAnimation=animate(el,[{opacity:.72,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:280});}
+ const entrances=new Set();
+ function clearEntrance(){for(const a of entrances)a.cancel();entrances.clear();}
+ function page(from,to){
+  clearEntrance();pageAnimation?.cancel();
+  const el=document.querySelector('#app-content>.page'),pane=document.querySelector('#app-content');if(!enabled()||!el)return;
+  const order=['home','catalog','card','benefits','profile'],a=order.indexOf(from),b=order.indexOf(to),direction=a>=0&&b>=0?Math.sign(b-a):0;
+  const bounds=pane.getBoundingClientRect();
+  // One read phase, at most seven visible content groups; no per-product cascade.
+  const groups=[...el.children].filter(n=>{const r=n.getBoundingClientRect();return r.height>24&&r.bottom>bounds.top&&r.top<bounds.bottom;}).slice(0,7);
+  groups.forEach((node,i)=>{
+   const prominent=node.matches('.experience-hero,.member-pass,.loyalty,.personal-coupon,.product-grid,.horizontal-products,.panel,.menu-group');
+   const animation=animate(node,[
+    {opacity:0,translate:`${direction*10}px ${i===0?10:22}px`,scale:prominent?'.985':'1'},
+    {opacity:1,translate:'0 -1px',scale:'1',offset:.78},
+    {opacity:1,translate:'0 0',scale:'1'}
+   ],{duration:prominent?450:380,delay:Math.min(i*28,140),easing:'cubic-bezier(.2,.75,.25,1)',fill:'backwards'});
+   if(animation){entrances.add(animation);animation.finished.catch(()=>{}).finally(()=>entrances.delete(animation));}
+  });
+ }
+ // A deliberate scroll or another action takes priority over the entrance sequence.
+ document.addEventListener('wheel',clearEntrance,{passive:true});
+ document.addEventListener('pointerdown',e=>{if(e.target.closest('#app-content'))clearEntrance();},{passive:true});
+
  function nav(){const host=document.querySelector('#bottom-nav'),b=host?.querySelector('button.active');if(!b)return;let marker=host.querySelector('.nav-liquid');if(!marker){marker=document.createElement('i');marker.className='nav-liquid';marker.setAttribute('aria-hidden','true');host.prepend(marker);}marker.style.width=b.offsetWidth+'px';marker.style.transform=`translateX(${b.offsetLeft}px)`;}
  // Scrub navigation without rendering intermediate screens under the finger.
  let scrub=null,suppressClickUntil=0;
@@ -43,7 +65,7 @@ const Motion=(()=>{
  function endDrag(cancelled=false){releasePress();if(!drag)return;const {dialog,dy}=drag;drag=null;if(!cancelled&&dy>72&&dismiss){dismiss();return;}animate(dialog,[{translate:dialog.style.translate||'0 0'},{translate:'0 0'}],{duration:260});dialog.style.translate='';}
  document.addEventListener('pointerup',()=>endDrag());document.addEventListener('pointercancel',()=>endDrag(true));
  function success(button){if(!button||!enabled())return;animate(button,[{scale:'.98'},{scale:'1.006',offset:.6},{scale:'1'}],{duration:260});}
- function stop(){finishScrub(true);for(const a of running)a.cancel();running.clear();press=null;pageAnimation=null;if(drag)drag.dialog.style.translate='';drag=null;}
+ function stop(){clearEntrance();finishScrub(true);for(const a of running)a.cancel();running.clear();press=null;pageAnimation=null;if(drag)drag.dialog.style.translate='';drag=null;}
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});reduce.addEventListener('change',()=>{if(reduce.matches)stop();});
  return {page,nav,animate,success,capture:()=>null,origin:()=>null,morph:()=>{},observe:()=>{},setDismiss:fn=>dismiss=fn,closed:()=>{const d=document.querySelector('#app-dialog');if(d)d.style.translate='';}};
 })();
