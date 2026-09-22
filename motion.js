@@ -6,26 +6,19 @@ const Motion=(()=>{
  const running=new Set();let pageAnimation=null,press=null,drag=null,dismiss=null;
  const enabled=()=>!reduce.matches&&!document.hidden;
  function animate(el,frames,options={}){if(!el||!enabled())return null;const a=el.animate(frames,{duration:260,easing:ease,...options});running.add(a);a.finished.catch(()=>{}).finally(()=>running.delete(a));return a;}
- const entrances=new Set();
- function clearEntrance(){for(const a of entrances)a.cancel();entrances.clear();}
+ function clearEntrance(){pageAnimation?.cancel();pageAnimation=null;}
  function page(from,to){
-  clearEntrance();pageAnimation?.cancel();
-  const el=document.querySelector('#app-content>.page'),pane=document.querySelector('#app-content');if(!enabled()||!el)return;
-  const order=['home','catalog','card','benefits','profile'],a=order.indexOf(from),b=order.indexOf(to),direction=a>=0&&b>=0?Math.sign(b-a):0;
-  const bounds=pane.getBoundingClientRect();
-  // One read phase, at most seven visible content groups; no per-product cascade.
-  const groups=[...el.children].filter(n=>{const r=n.getBoundingClientRect();return r.height>24&&r.bottom>bounds.top&&r.top<bounds.bottom;}).slice(0,7);
-  groups.forEach((node,i)=>{
-   const prominent=node.matches('.experience-hero,.member-pass,.loyalty,.personal-coupon,.product-grid,.horizontal-products,.panel,.menu-group');
-   const animation=animate(node,[
-    {opacity:0,translate:`${direction*10}px ${i===0?10:22}px`,scale:prominent?'.985':'1'},
-    {opacity:1,translate:'0 -1px',scale:'1',offset:.78},
-    {opacity:1,translate:'0 0',scale:'1'}
-   ],{duration:prominent?450:380,delay:Math.min(i*28,140),easing:'cubic-bezier(.2,.75,.25,1)',fill:'backwards'});
-   if(animation){entrances.add(animation);animation.finished.catch(()=>{}).finally(()=>entrances.delete(animation));}
-  });
+  clearEntrance();
+  const el=document.querySelector('#app-content>.page');if(!enabled()||!el)return;
+  const tabs=['home','catalog','card','benefits','profile'];
+  const a=tabs.indexOf(from),b=tabs.indexOf(to);
+  const direction=a>=0&&b>=0?Math.sign(b-a):0;
+  // One surface, one timing curve. No stagger, bounce, scaling, or hidden cards.
+  pageAnimation=animate(el,[
+   {opacity:from ? 0.88 : 0,translate:direction?`${direction*24}px 0`:'0 12px'},
+   {opacity:1,translate:'0 0'}
+  ],{duration:from?340:420,easing:'cubic-bezier(.16,1,.3,1)'});
  }
- // A deliberate scroll or another action takes priority over the entrance sequence.
  document.addEventListener('wheel',clearEntrance,{passive:true});
  document.addEventListener('pointerdown',e=>{if(e.target.closest('#app-content'))clearEntrance();},{passive:true});
 
