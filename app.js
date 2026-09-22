@@ -162,4 +162,5 @@ function drawBarcodes(){document.querySelectorAll('.barcode').forEach(svg=>{cons
 Motion.setDismiss(()=>closeDialog());
 fitDevice();
 render();
+requestAnimationFrame(()=>Motion.page(null,ui.page));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
