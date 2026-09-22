@@ -65,10 +65,33 @@ dialog{background:radial-gradient(ellipse at 100% 0,#e7d6b870,transparent 55%),l
 
 /* The browser chrome and safe area share one exact top-edge colour. */
 .device-screen{background:linear-gradient(#edf0e7 0,rgba(237,240,231,0) 160px),radial-gradient(ellipse at 100% 6%,#e5c99180,transparent 48%),radial-gradient(ellipse at -15% 55%,#aabca580,transparent 58%),linear-gradient(155deg,#f5f4eb,#e5ebdf 65%,#efe8d9)!important}
-@media(max-width:600px){html,body,.studio,.device-stage,.device{background:#edf0e7!important}.device-screen{background:linear-gradient(#edf0e7 0,#edf0e7 env(safe-area-inset-top),rgba(237,240,231,0) calc(env(safe-area-inset-top) + 160px)),radial-gradient(ellipse at 100% 6%,#e5c99180,transparent 48%),radial-gradient(ellipse at -15% 55%,#aabca580,transparent 58%),linear-gradient(155deg,#f5f4eb,#e5ebdf 65%,#efe8d9)!important}}
-#bottom-nav{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+@media(max-width:600px){html,body,.studio,.device-stage,.device{background:#edf0e7!important}.device-screen{background:linear-gradient(#edf0e7 0,#edf0e7 calc(env(safe-area-inset-top) + 70px),rgba(237,240,231,0) calc(env(safe-area-inset-top) + 230px)),radial-gradient(ellipse at 100% 6%,#e5c99180,transparent 48%),radial-gradient(ellipse at -15% 55%,#aabca580,transparent 58%),linear-gradient(155deg,#f5f4eb,#e5ebdf 65%,#efe8d9)!important}}
+#bottom-nav{touch-action:none;user-select:none;-webkit-user-select:none}
 #bottom-nav.is-scrubbing{touch-action:none}
 #bottom-nav.is-scrubbing .nav-liquid{transition:none!important;background:linear-gradient(135deg,#ffffff80,#ffffff18 48%,#f7fff844);border-color:#ffffffed;box-shadow:inset 0 1px 1px #fff,inset 0 -1px 2px #7a95754d,0 3px 10px #24452621;scale:1.045 1.06}
 #bottom-nav.is-scrubbing button.active{color:#60705c}#bottom-nav.is-scrubbing button.scrub-target{color:#24472f}
 @media(prefers-reduced-motion:reduce){#bottom-nav.is-scrubbing .nav-liquid{scale:1}}
 @media(prefers-reduced-transparency:reduce){#bottom-nav.is-scrubbing .nav-liquid{background:#f5f8ef}}
+/* Slow ambient light: one composited layer, no animated filters or gradient repaint. */
+.device-screen:before{content:'';position:absolute;inset:100px -8% -8%;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 25% 35%,#b4c99a50,transparent 56%),radial-gradient(ellipse at 80% 65%,#e7bd6f45,transparent 54%);animation:ambient-drift 32s ease-in-out infinite!important;transform-origin:center;will-change:transform}
+@keyframes ambient-drift{0%,100%{transform:translate(-2%,-2%) scale(1)}33%{transform:translate(3%,1%) scale(1.04)}68%{transform:translate(-1%,4%) scale(1.02)}}
+.device-screen:has(dialog[open]):before{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){.device-screen:before{animation:none!important;will-change:auto}}
+html.page-hidden .device-screen:before{animation-play-state:paused!important}
+/* Compact ticket: artwork accompanies the offer rather than becoming the whole sheet. */
+.coupon-ticket{overflow:hidden;border-radius:24px;background:#fffdf5;border:1px solid #fff;box-shadow:0 8px 24px -16px #314a3150}
+.coupon-ticket-hero{height:170px;position:relative;overflow:hidden;background:#1c241c;color:#fbe8b6;padding:23px;isolation:isolate}
+.coupon-ticket-hero>img{position:absolute;width:64%;height:100%;right:0;top:0;object-fit:cover;object-position:85% 35%;z-index:-2;opacity:.7}
+.coupon-ticket-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#1c241c 20%,#1c241cc0 54%,transparent);z-index:-1}
+.coupon-ticket-hero span{font-size:9px;letter-spacing:1.5px}.coupon-ticket-hero strong{display:block;font-size:64px;line-height:1.1;letter-spacing:-3px;font-weight:650;margin:9px 0 4px}.coupon-ticket-hero h3{font-size:18px;letter-spacing:-.4px;color:#ffedc4}
+.coupon-ticket-body{padding:18px;border-top:1px dashed #bdc4ac}.coupon-facts{display:flex;justify-content:space-between;gap:12px;margin-bottom:16px;font-size:13px;font-weight:650;color:#31432c}.coupon-facts small{display:block;font-size:10px;font-weight:400;margin-top:5px;color:#72806a}.coupon-pending{display:flex;align-items:center;gap:8px;font-size:11px;color:#758068;margin:14px 0}.coupon-ticket .primary{width:100%;min-height:44px;font-size:12px}.coupon-terms{margin:12px 0 0;border:0;padding:0}.coupon-terms summary{font-size:11px;color:#607158;padding:6px 0}.coupon-terms p{font-size:11px;line-height:1.6;color:#69735f;margin-top:8px}.coupon-code{text-align:center;margin:10px 0 14px}.coupon-code .barcode{height:42px;max-width:100%}.coupon-code .barcode-number{font-size:11px;letter-spacing:1px}.coupon-code small{display:block;font-size:9px;color:#74806a;margin-top:5px}
+.page-benefits>.personal-coupon{display:flex;height:152px}.page-benefits>.personal-coupon .personal-coupon-art{width:40%;aspect-ratio:auto;flex-shrink:0}.page-benefits>.personal-coupon .personal-coupon-art img{height:100%;object-fit:cover;object-position:top}.page-benefits>.personal-coupon .personal-coupon-caption{flex:1;min-width:0;padding:15px;border-top:0;align-items:center}.page-benefits>.personal-coupon .personal-coupon-caption b{font-size:14px;line-height:1.4}.page-benefits>.personal-coupon .personal-coupon-caption small{font-size:10px;line-height:1.6}
+@media(max-height:650px){.coupon-ticket-hero{height:132px;padding:17px}.coupon-ticket-hero strong{font-size:49px;margin:5px 0}.coupon-ticket-hero h3{font-size:16px}.coupon-ticket-body{padding:13px}.coupon-facts{margin-bottom:10px}.coupon-pending{margin:10px 0}.coupon-terms{margin-top:7px}}
+
+.device-screen:before{-webkit-mask-image:linear-gradient(transparent,#000 150px);mask-image:linear-gradient(transparent,#000 150px)}
+@media(max-width:600px){:root{color-scheme:light}html,body{background-color:#edf0e7!important}.statusbar{background:#edf0e7}}
+/* Only the content pane scrolls; focusing a sheet must not scroll the phone shell. */
+.device-screen{overflow:clip}
+@media(max-height:650px){.coupon-code{margin:7px 0 10px}.coupon-code .barcode{height:34px}.coupon-ticket-body .primary{min-height:40px}}
+
+#bottom-nav button,#bottom-nav button *{touch-action:none;-webkit-user-drag:none}
