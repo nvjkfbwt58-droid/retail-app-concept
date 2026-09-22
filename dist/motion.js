@@ -19,12 +19,13 @@ const Motion=(()=>{
   const visible=candidates.filter(n=>{const r=n.getBoundingClientRect();return r.width>0&&r.height>18&&r.bottom>bounds.top&&r.top<bounds.bottom;}).slice(0,12);
   visible.forEach((node,i)=>{
    const card=node.matches('button,.member-pass,.loyalty,.product-card,.panel,.menu-group');
-   const distance=card?24:16,blur=card?5:3;
+   const distance=card?24:16,blur=card?10:7;
    const a=animate(node,[
     {opacity:0,translate:`0 ${distance}px`,scale:card?'.987':'1',filter:`blur(${blur}px)`},
-    {opacity:1,translate:'0 2px',scale:'1',filter:'blur(.5px)',offset:.65},
+    {opacity:.55,translate:'0 12px',scale:'.995',filter:`blur(${blur*.65}px)`,offset:.28},
+    {opacity:.96,translate:'0 3px',scale:'1',filter:'blur(1.5px)',offset:.64},
     {opacity:1,translate:'0 0',scale:'1',filter:'blur(0px)'}
-   ],{duration:560,delay:Math.min(i*38,228),easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
+   ],{duration:640,delay:Math.min(i*38,228),easing:'linear',fill:'backwards'});
    if(a){entrances.add(a);a.finished.catch(()=>{}).finally(()=>entrances.delete(a));}
   });
  }
