@@ -62,11 +62,11 @@ function slideHero(index){
  if(matchMedia('(prefers-reduced-motion: reduce)').matches){track.scrollTo({left:to,behavior:'instant'});return;}
  const motion={track,frame:0,target:index};heroMotion=motion;
  track.style.scrollSnapType='none';track.classList.add('hero-in-motion');
- const duration=620,start=performance.now();
+ const duration=720,start=performance.now();
  function tick(now){
   if(!track.isConnected){stopHeroMotion();return;}
-  const t=Math.min(1,(now-start)/duration),ease=t*t*t*(t*(t*6-15)+10);
-  track.style.filter=`blur(${(Math.abs(to-from)<1?0:2.8*Math.pow(Math.sin(Math.PI*Math.min(1,t/.82)),2)).toFixed(2)}px)`;
+  const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,4);
+  track.style.filter=`blur(${(Math.abs(to-from)<1?0:2.8*Math.min(1,t/.06)*Math.pow(1-Math.min(1,t/.65),2)).toFixed(2)}px)`;
   track.scrollTo({left:from+(to-from)*ease,behavior:'instant'});
   if(t<1)motion.frame=requestAnimationFrame(tick);else stopHeroMotion();
  }
