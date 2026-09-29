@@ -127,3 +127,6 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 
 .home-hero .hero-dots button span{transition:width .36s cubic-bezier(.22,1,.36,1),background-color .36s ease}
 @media(prefers-reduced-motion:reduce){.home-hero .hero-dots button span{transition:none}}
+
+.hero-track{transition:filter .12s ease-out}.hero-track.hero-in-motion{transition:none;will-change:filter}
+@media(prefers-reduced-motion:reduce){.hero-track{transition:none;filter:none!important}}
