@@ -108,3 +108,15 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 .product-availability{display:block;font-size:9px;line-height:1.4;color:#3f6842;margin:0 0 12px}.product-availability svg{vertical-align:-2px;margin-right:2px}.product-availability small{display:block;font-size:8px;color:#75816d;margin-top:3px;overflow-wrap:anywhere}.stock-panel{margin:20px 0;border:1px solid #ffffffd9;background:#ffffff9c;padding:16px;border-radius:22px}.stock-panel h3{font-size:18px;letter-spacing:-.4px}.stock-panel .pill{font-size:8px}.stock-row{display:flex;width:100%;align-items:center;gap:9px;padding:15px 0;text-align:left;border-bottom:1px solid #243e2a12;color:#2c4530}.stock-row b{display:block;font-size:12px}.stock-row small{display:block;font-size:10px;color:#75806f;margin-top:4px}.stock-row em{font-style:normal;font-size:9px;color:#417047;white-space:nowrap}.stock-panel>.secondary{width:100%;margin-top:12px}.store-assortment-link{display:inline-flex;align-items:center;gap:6px;color:#536c40;font-size:11px;margin:10px 0 0 8px}.store-stock-grid{margin-top:18px}.page-catalog .card-note{margin-top:16px}
 
 .map-product-filter{display:flex;align-items:center;justify-content:space-between;gap:12px}.map-product-filter .text-btn{flex-shrink:0}
+
+/* A visible, thumb-friendly carousel navigation rail. */
+.hero-controls{display:flex;align-items:center;justify-content:center;gap:24px;padding:8px 16px;background:linear-gradient(120deg,#fbfaf1ed,#e8eddfed);border-top:1px solid #ffffffa6}
+.home-hero .hero-dots{position:static;display:flex;align-items:center;gap:2px}
+.home-hero .hero-dots button{width:28px;height:32px;background:transparent}
+.home-hero .hero-dots button span{width:6px;height:6px;background:#324a3c40}
+.home-hero .hero-dots button.active span{width:22px;background:#344d3c;box-shadow:0 1px 3px #344d3c20}
+.hero-arrow{display:grid;place-items:center;width:44px;height:36px;padding:0;border-radius:18px;color:#304736;background:linear-gradient(145deg,#ffffffdf,#ffffff50);border:1px solid #ffffffd9;box-shadow:0 2px 6px #1f382310,inset 0 1px 0 #fff;transition:transform .18s,background .18s}
+.hero-prev svg{transform:rotate(180deg)}
+.hero-arrow:active{transform:scale(.92);background:#ffffff}
+.hero-arrow:focus-visible,.hero-dots button:focus-visible{outline:2px solid #58734a;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.hero-arrow{transition:none}}
