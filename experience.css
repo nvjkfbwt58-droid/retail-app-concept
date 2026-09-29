@@ -124,3 +124,6 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 .home-hero .hero-foot{bottom:55px}
 @media(max-width:350px){.hero-track .experience-hero{height:277px}}
 @media(prefers-reduced-motion:reduce){.hero-arrow{transition:none}}
+
+.home-hero .hero-dots button span{transition:width .36s cubic-bezier(.22,1,.36,1),background-color .36s ease}
+@media(prefers-reduced-motion:reduce){.home-hero .hero-dots button span{transition:none}}
