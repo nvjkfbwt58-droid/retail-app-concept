@@ -54,27 +54,28 @@ const heroBanners=[
 ];
 function homeHero(){return `<section class="home-hero" aria-label="Подборки для вас"><div class="hero-track">${heroBanners.map((h,i)=>`<button class="experience-hero hero-${h.tone}" data-action="${h.action}" aria-label="${h.cta}"><img src="assets/${h.image}" alt="${h.alt}" ${i===0?'fetchpriority="high"':'loading="lazy"'} decoding="async"><span class="hero-shade"></span><span class="hero-eyebrow">${h.eyebrow}</span><strong>${h.title}</strong><span class="hero-action">${h.cta} ${icon('arrow',18)}</span><span class="hero-foot">${h.foot}</span></button>`).join('')}</div><div class="hero-controls"><button class="hero-arrow hero-prev" data-action="hero-step" data-step="-1" aria-label="Предыдущий баннер">${icon('chevron',17)}</button><div class="hero-dots" aria-label="Выбор баннера">${heroBanners.map((h,i)=>`<button data-action="hero-slide" data-index="${i}" aria-label="Баннер ${i+1}: ${h.cta}" aria-pressed="${i===0}" class="${i===0?'active':''}"><span></span></button>`).join('')}</div><button class="hero-arrow hero-next" data-action="hero-step" data-step="1" aria-label="Следующий баннер">${icon('chevron',17)}</button></div></section>`;}
 let heroMotion=null;
-function stopHeroMotion(){if(!heroMotion)return;cancelAnimationFrame(heroMotion.frame);heroMotion.track.style.scrollSnapType='';heroMotion=null;}
+function stopHeroMotion(){if(!heroMotion)return;cancelAnimationFrame(heroMotion.frame);heroMotion.track.style.scrollSnapType='';heroMotion.track.style.filter='';heroMotion.track.classList.remove('hero-in-motion');heroMotion=null;}
 function slideHero(index){
  const track=document.querySelector('.hero-track');if(!track)return;
  stopHeroMotion();
  const from=track.scrollLeft,to=index*track.clientWidth;
  if(matchMedia('(prefers-reduced-motion: reduce)').matches){track.scrollTo({left:to,behavior:'instant'});return;}
  const motion={track,frame:0,target:index};heroMotion=motion;
- track.style.scrollSnapType='none';
+ track.style.scrollSnapType='none';track.classList.add('hero-in-motion');
  const duration=620,start=performance.now();
  function tick(now){
   if(!track.isConnected){stopHeroMotion();return;}
   const t=Math.min(1,(now-start)/duration),ease=t*t*t*(t*(t*6-15)+10);
+  track.style.filter=`blur(${(Math.abs(to-from)<1?0:2.8*Math.pow(Math.sin(Math.PI*Math.min(1,t/.82)),2)).toFixed(2)}px)`;
   track.scrollTo({left:from+(to-from)*ease,behavior:'instant'});
   if(t<1)motion.frame=requestAnimationFrame(tick);else stopHeroMotion();
  }
  motion.frame=requestAnimationFrame(tick);
 }
-function initHero(){stopHeroMotion();const track=document.querySelector('.hero-track');if(!track)return;let current=-1;
+function initHero(){stopHeroMotion();const track=document.querySelector('.hero-track');if(!track)return;let current=-1,lastX=track.scrollLeft,lastAt=performance.now(),blurTimer;
  track.addEventListener('pointerdown',stopHeroMotion,{passive:true});
  track.addEventListener('wheel',stopHeroMotion,{passive:true});
- track.addEventListener('scroll',()=>{const i=Math.round(track.scrollLeft/track.clientWidth);if(i===current)return;current=i;document.querySelectorAll('.hero-dots button').forEach((b,n)=>{b.classList.toggle('active',i===n);b.setAttribute('aria-pressed',String(i===n));});},{passive:true});}
+ track.addEventListener('scroll',()=>{const now=performance.now(),speed=Math.abs(track.scrollLeft-lastX)/Math.max(16,now-lastAt);lastX=track.scrollLeft;lastAt=now;if(!heroMotion&&!matchMedia('(prefers-reduced-motion: reduce)').matches){track.style.filter=`blur(${Math.min(2.4,speed*.8).toFixed(2)}px)`;clearTimeout(blurTimer);blurTimer=setTimeout(()=>{if(!heroMotion)track.style.filter='';},70);}const i=Math.round(track.scrollLeft/track.clientWidth);if(i===current)return;current=i;document.querySelectorAll('.hero-dots button').forEach((b,n)=>{b.classList.toggle('active',i===n);b.setAttribute('aria-pressed',String(i===n));});},{passive:true});}
 window.addEventListener('resize',stopHeroMotion,{passive:true});
 const screens={
 home:()=>`<div class="home-context"><button class="home-location" data-action="navigate" data-page="stores"><span class="context-icon">${icon('pin',18)}</span><span><small>АССОРТИМЕНТ РЯДОМ</small><b>Омск · 3 магазина</b></span>${icon('chevron',14)}</button>${iconBtn('navigate','bell','Уведомления','data-page="notifications"')}</div><div class="home-welcome"><p>Привет, ${esc(data.name)}</p><h2>На вашей волне<span>.</span></h2></div>${homeHero()}<section class="member-pass" aria-label="Ваша карта покупателя"><button class="member-balance" data-action="navigate" data-page="wallet"><span>ВАША КАРТА ${icon('spark',12)}</span><b>${fmt(data.balance)}<small> бонусов</small></b><em>Выбрать награду ${icon('arrow',13)}</em></button><button class="member-code" data-action="card-zoom" aria-label="Показать код карты на кассе">${barcode()}<span>На кассе ${icon('expand',12)}</span></button></section><div class="service-shortcuts">${[['heart','Избранное','favorites'],['pin','Рядом','stores'],['bag','Мой список','basket']].map(([i,n,p])=>`<button data-action="navigate" data-page="${p}">${icon(i,19)}<span>${n}</span>${p==='basket'&&totalQty()?`<b>${totalQty()}</b>`:''}</button>`).join('')}</div><div class="section-heading"><div><span class="section-kicker">ПРИЯТНЫЙ ПОВОД ЗАЙТИ</span><h3>Только для вас</h3></div>${btn('navigate',icon('arrow',18),'section-arrow','data-page="benefits" aria-label="Все выгоды"')}</div>${personalCouponCard(true)}<div class="section-heading"><div><span class="section-kicker">ВАША ЛИЧНАЯ КОЛЛЕКЦИЯ</span><h3>Стоит попробовать</h3></div>${btn('navigate',icon('arrow',18),'section-arrow','data-page="catalog" aria-label="Открыть каталог"')}</div><div class="horizontal-products">${products.filter(p=>p.brand).sort((a,b)=>Number(data.prefs.includes(b.taste))-Number(data.prefs.includes(a.taste))).slice(0,2).map(card).join('')}</div><button class="banner-link support-banner" data-action="navigate" data-page="support"><span class="support-orb">${icon('support',24)}</span><span><b>Проблемы с приложением?</b><p>Мы рядом и готовы помочь</p></span>${icon('arrow',18)}</button>`,
