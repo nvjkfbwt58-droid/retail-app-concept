@@ -132,3 +132,19 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.hero-track{transition:none;filter:none!important}}
 /* Keep cola cocktail presentations as bright as the rest of the assortment. */
 .product-art .product-scene img.drink-cola,.detail-photo .product-scene img.drink-cola,.basket-visual .product-scene img.drink-cola{filter:drop-shadow(5px 7px 5px #57452b40)}
+
+/* A compact membership pass with a dedicated scan surface. */
+.pass-intro{margin:-8px 0 22px;font-size:12px;color:#7b856d}
+.customer-pass{border-radius:27px;overflow:hidden;background:#fffdf5;box-shadow:0 18px 32px -18px #203d3266,0 0 0 1px #ffffffb3}
+.pass-cover{position:relative;isolation:isolate;overflow:hidden;padding:22px 24px 20px;background:radial-gradient(ellipse at 110% 0%,#647956,transparent 65%),linear-gradient(135deg,#284b3c,#192f27);color:#fff8e6}
+.pass-cover:after{content:'';position:absolute;z-index:-1;width:210px;height:210px;right:-82px;top:-48px;border-radius:50%;border:1px solid #ecd7a626;box-shadow:0 0 0 22px #eedbad08,0 0 0 46px #eedbad06}
+.pass-kicker{display:flex;justify-content:space-between;align-items:center;font-size:8px;letter-spacing:1.7px;color:#d9cba4}
+.pass-owner{margin-top:20px;font-size:19px;font-weight:650;letter-spacing:-.4px}.pass-owner>span{display:block;margin-top:4px;font-size:10px;font-weight:400;letter-spacing:0;color:#c0cdb9}
+.pass-balance{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:16px 0 0;margin-top:15px;border-top:1px solid #ffffff1c;color:inherit;background:transparent}
+.pass-balance strong{font-size:37px;line-height:1;letter-spacing:-1.5px;font-weight:650}.pass-balance small{display:block;font-size:10px;color:#d1d5bc;margin-top:6px}
+.pass-balance-arrow{display:grid;place-items:center;width:35px;height:35px;border-radius:50%;border:1px solid #e8d79b38;color:#e9d397;background:#ffffff08}
+.pass-code-area{padding:18px 24px 10px}.pass-code-title{display:flex;align-items:center;justify-content:space-between;color:#7b806b;font-size:10px}.pass-code-title svg{color:#9aab89}
+.pass-code{display:block;width:100%;padding:14px 9px 8px;background:#fffdf5;color:#101b13}.pass-code svg{display:block;width:100%;height:74px}.pass-code .barcode-number{font-size:12px;letter-spacing:2px}.pass-expand{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px;color:#607453;background:transparent;font-size:10px}
+.pass-status{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;background:#eff2e7;color:#7a876b;font-size:9px;border-top:1px solid #e7ebdc}.pass-status>span{width:5px;height:5px;background:#8ca375;border-radius:50%}
+.pass-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.pass-quick-actions button{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:15px 14px;background:#ffffff80;border:1px solid #ffffffb3;border-radius:19px;text-align:left;color:#4c6646}.pass-quick-actions button>span{font-size:10px;font-weight:650;flex:1}.pass-quick-actions button>svg:first-child{width:100%;flex-basis:100%;height:20px;object-position:left}.pass-quick-actions button>svg:first-child{flex-basis:auto;width:20px}.pass-quick-actions button>svg:last-child{opacity:.55;width:11px}
+.pass-service{background:#ffffff60;border:1px solid #ffffff9c;border-radius:21px;padding:0 15px}.pass-service>button{display:flex;width:100%;align-items:center;gap:11px;text-align:left;background:transparent;padding:15px 0;color:#52664a}.pass-service>button+button{border-top:1px solid #6d845414}.pass-service>button>span:nth-child(2){flex:1}.pass-service b{display:block;font-size:11px;font-weight:650}.pass-service small{display:block;font-size:9px;color:#869079;margin-top:4px}.pass-service-icon{width:32px;height:32px;display:grid;place-items:center;background:#e5ebd980;border-radius:12px}
