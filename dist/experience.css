@@ -130,3 +130,5 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 
 .hero-track{transition:filter .12s ease-out}.hero-track.hero-in-motion{transition:none;will-change:filter}
 @media(prefers-reduced-motion:reduce){.hero-track{transition:none;filter:none!important}}
+/* Keep cola cocktail presentations as bright as the rest of the assortment. */
+.product-art .product-scene img.drink-cola,.detail-photo .product-scene img.drink-cola,.basket-visual .product-scene img.drink-cola{filter:drop-shadow(5px 7px 5px #57452b40)}
