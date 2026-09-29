@@ -109,14 +109,18 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 
 .map-product-filter{display:flex;align-items:center;justify-content:space-between;gap:12px}.map-product-filter .text-btn{flex-shrink:0}
 
-/* A visible, thumb-friendly carousel navigation rail. */
-.hero-controls{display:flex;align-items:center;justify-content:center;gap:24px;padding:8px 16px;background:linear-gradient(120deg,#fbfaf1ed,#e8eddfed);border-top:1px solid #ffffffa6}
-.home-hero .hero-dots{position:static;display:flex;align-items:center;gap:2px}
-.home-hero .hero-dots button{width:28px;height:32px;background:transparent}
-.home-hero .hero-dots button span{width:6px;height:6px;background:#324a3c40}
-.home-hero .hero-dots button.active span{width:22px;background:#344d3c;box-shadow:0 1px 3px #344d3c20}
-.hero-arrow{display:grid;place-items:center;width:44px;height:36px;padding:0;border-radius:18px;color:#304736;background:linear-gradient(145deg,#ffffffdf,#ffffff50);border:1px solid #ffffffd9;box-shadow:0 2px 6px #1f382310,inset 0 1px 0 #fff;transition:transform .18s,background .18s}
+/* Translucent controls sit directly on the artwork. */
+.hero-controls{position:absolute;inset:auto 12px 6px;z-index:4;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.home-hero .hero-dots{position:static;display:flex;align-items:center;gap:2px;pointer-events:auto}
+.home-hero .hero-dots button{width:28px;height:36px;background:transparent}
+.home-hero .hero-dots button span{width:5px;height:5px;background:#ffffff55;box-shadow:0 1px 3px #0003}
+.home-hero .hero-dots button.active span{width:19px;background:#fff3d6c9}
+.hero-arrow{display:grid;place-items:center;width:38px;height:34px;padding:0;border-radius:18px;color:#fff5dfb8;background:#ffffff0d;border:1px solid #ffffff29;box-shadow:inset 0 1px 0 #ffffff12;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);pointer-events:auto;transition:transform .18s,background .18s}
 .hero-prev svg{transform:rotate(180deg)}
-.hero-arrow:active{transform:scale(.92);background:#ffffff}
-.hero-arrow:focus-visible,.hero-dots button:focus-visible{outline:2px solid #58734a;outline-offset:2px}
+.hero-arrow:active{transform:scale(.92);background:#ffffff26}
+.hero-arrow:focus-visible,.hero-dots button:focus-visible{outline:2px solid #fff1ca;outline-offset:2px}
+.hero-track .experience-hero{height:302px}
+.home-hero .hero-action{bottom:78px}
+.home-hero .hero-foot{bottom:55px}
+@media(max-width:350px){.hero-track .experience-hero{height:277px}}
 @media(prefers-reduced-motion:reduce){.hero-arrow{transition:none}}
