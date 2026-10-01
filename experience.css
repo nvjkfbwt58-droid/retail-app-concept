@@ -151,3 +151,8 @@ html.page-hidden .device-screen:before{animation-play-state:paused!important}
 
 
 
+
+/* Favorite state changes the icon only, preserving each button surface. */
+.heart.selected{background:#fffff6e8;color:#b58a36}
+.poster-product .heart.selected{background:#191c1c66;color:#efd18d}
+.heart.selected svg{fill:currentColor;stroke:currentColor}
