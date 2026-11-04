@@ -6,6 +6,7 @@ from urllib.parse import urlsplit,unquote
 import json
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'dist'
 data=json.loads((ROOT/'data/catalogue.json').read_text());errors=[]
+presentation=json.loads((ROOT/'data/product-presentation.json').read_text())['images']
 class Check(HTMLParser):
     def __init__(self,path):super().__init__();self.path=path;self.h1=0
     def handle_starttag(self,tag,attributes):
@@ -25,9 +26,12 @@ assert len(data['products'])==205 and len({p['id'] for p in data['products']})==
 for product in data['products']:
     assert (OUT/'product'/product['slug']/'index.html').is_file(),product['slug']
     for image in product['images']:
+        assert image['local'] in presentation,('Missing original-photo presentation',image['local'])
+        assert '--media-clip:polygon(' in presentation[image['local']]['style'],image['local']
         for key in ('local','localLarge'):assert (OUT/image[key]).is_file(),image[key]
 for category in data['categories']:
     assert (OUT/'product-category'/category['slug']/'index.html').is_file(),category['slug']
 if errors:raise SystemExit(json.dumps(errors[:30],ensure_ascii=False))
+assert (OUT/'assets/italy-pencil-v2.webp').is_file()
 report={'products':205,'categories':len(data['categories']),'contentPages':sum(1 for p in OUT.rglob('index.html') if '_qa' not in p.parts and '404' not in p.parts),'brokenLocalReferences':0,'validation':'passed'}
 print(json.dumps(report,ensure_ascii=False))

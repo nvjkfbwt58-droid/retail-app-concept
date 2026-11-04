@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build every public route as plain HTML. No frontend framework or build dependencies."""
 from pathlib import Path
-import json, re, html, shutil
+import json, re, html, shutil, hashlib
 from urllib.parse import quote
 from datetime import date
 
@@ -9,6 +9,18 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'dist'
 DATA=json.loads((ROOT/'data/catalogue.json').read_text())
 PRODUCTS=DATA['products']; CATEGORIES=DATA['categories']
+PRESENTATION_PATH=ROOT/'data/product-presentation.json'
+PRESENTATIONS=json.loads(PRESENTATION_PATH.read_text()).get('images',{}) if PRESENTATION_PATH.exists() else {}
+PHOTO_OVERRIDES_PATH=ROOT/'data/product-photo-overrides.json'
+PHOTO_OVERRIDES=json.loads(PHOTO_OVERRIDES_PATH.read_text()) if PHOTO_OVERRIDES_PATH.exists() else {}
+for product in PRODUCTS:
+    for photo in product['images']:
+        replacement=PHOTO_OVERRIDES.get(photo['local'])
+        if replacement:
+            photo['local']=replacement['local'];photo['localLarge']=replacement['localLarge']
+            PRESENTATIONS[replacement['local']]={'style':replacement['style']}
+CSS_VERSION=hashlib.sha1((ROOT/'src/styles.css').read_bytes()).hexdigest()[:10]
+JS_VERSION=hashlib.sha1((ROOT/'src/app.js').read_bytes()).hexdigest()[:10]
 SITE='https://nvjkfbwt58-droid.github.io/retail-app-concept/west-est/'
 TG='https://telegram.me/westestminsk'
 EMAIL='westest.minsk@gmail.com'
@@ -17,7 +29,9 @@ CATS={c['id']:c for c in CATEGORIES}
 for c in CATEGORIES:c['displayName']=SHORT.get(c['id'],c['name'])
 # Source titles contain verified article/brand information absent in some API fields.
 known_brands=['Granoro','Masiello','Lovascio','De Nigris','Trevalli','Molisana']
+known_brand_overrides={38607:'Masiello'}
 for p in PRODUCTS:
+    if p['id'] in known_brand_overrides:p['brand']=known_brand_overrides[p['id']]
     if not p['sku']:
         m=re.match(r'^(?:Арт\.?\s*)?(\d{3,6})\b',p['name'],re.I)
         if m:p['sku']=m.group(1)
@@ -28,7 +42,13 @@ def e(s):return html.escape(str(s or ''),quote=True)
 def path_product(p):return 'product/'+p['slug']+'/'
 def path_category(c):return 'product-category/'+c['slug']+'/'
 def href(prefix,path):return prefix+quote(path,safe='/?=&-_.~')
-def name(p):return re.sub(r'^(?:Арт\.?\s*)?\d{3,6}\s*[:.\-]?\s*','',p['name'],flags=re.I).strip()
+def name(p):
+    text=re.sub(r'^(?:(?:Арт|Атр)\.?\s*)?\d{3,6}\s*[:.\-]?\s*','',p['name'],flags=re.I).strip()
+    return re.sub(r'(\d)\s*(кг|гр\.?|г|мл|л)(?=$|[\s,.;])',lambda m:m[1]+'\u00a0'+('г' if m[2].lower().startswith('гр') else m[2].lower()),text,flags=re.I)
+def media_style(path):return PRESENTATIONS.get(path.replace('-large.webp','.webp'),{}).get('style','')
+def media_image(path,prefix,alt='',loading='lazy',size=520):
+    style=media_style(path)
+    return f'<img class="product-cutout'+(' is-normalized' if style else '')+f'" style="{e(style)}" src="{prefix}{path}" alt="{e(alt)}" width="{size}" height="{size}" loading="{loading}" decoding="async">'
 def count_word(n):return 'товар' if n%10==1 and n%100!=11 else 'товара' if n%10 in [2,3,4] and not 12<=n%100<=14 else 'товаров'
 def icon(kind='arrow'):
     paths={'arrow':'<path d="M5 12h14m-6-6 6 6-6 6"/>','diagonal':'<path d="M6 18 18 6M6 6h12v12"/>','search':'<circle cx="10.5" cy="10.5" r="6.7"/><path d="m16 16 5 5"/>','menu':'<path d="M4 8h16M4 16h16"/>','close':'<path d="m6 6 12 12M6 18 18 6"/>','plus':'<path d="M5 12h14M12 5v14"/>','chat':'<path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-10a9 9 0 0 1 18 0Z"/><path d="M7 10h8M7 14h5"/>','pin':'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>','grid':'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>','list':'<path d="M4 5h16M4 12h16M4 19h16"/>'}
@@ -43,7 +63,7 @@ def footer(prefix):
 def dialogs(prefix):
     options=''.join(f'<option value="{c["id"]}">{e(c["displayName"])}</option>' for c in CATEGORIES)
     close=f'<button class="round-button dialog-close" data-close aria-label="Закрыть">{icon("close")}</button>'
-    return f'''<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">{close}<h2 id="search-title">Найти свой продукт</h2><form class="search-form" id="global-search-form" action="{href(prefix,'shop/')}" role="search">{icon('search')}<input id="global-search" name="q" type="search" placeholder="Название, марка или артикул" autocomplete="off" aria-label="Поиск по каталогу"><button type="submit" aria-label="Показать результаты поиска">{icon()}</button></form><label class="search-category" for="search-category">Категория<select id="search-category" name="category"><option value="">Все категории</option>{options}</select></label><div class="search-results" id="search-results" aria-live="polite"><p class="search-hint">Например: Granoro, оливковое масло или артикул товара.</p></div></dialog><dialog class="quick-dialog" id="quick-dialog" aria-labelledby="quick-title">{close}<div id="quick-content"></div></dialog><dialog class="image-dialog" id="image-dialog" aria-label="Фотография продукта в полном размере">{close}<img id="zoom-image" alt="" width="1000" height="1000"></dialog>'''
+    return f'''<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">{close}<h2 id="search-title">Найти свой продукт</h2><form class="search-form" id="global-search-form" action="{href(prefix,'shop/')}" role="search">{icon('search')}<input id="global-search" name="q" type="search" placeholder="Название, марка или артикул" autocomplete="off" aria-label="Поиск по каталогу"><button type="submit" aria-label="Показать результаты поиска">{icon()}</button></form><label class="search-category" for="search-category">Категория<select id="search-category" name="category"><option value="">Все категории</option>{options}</select></label><div class="search-results" id="search-results" aria-live="polite"><p class="search-hint">Например: Granoro, оливковое масло или артикул товара.</p></div></dialog><dialog class="quick-dialog" id="quick-dialog" aria-labelledby="quick-title">{close}<div id="quick-content"></div></dialog><dialog class="image-dialog" id="image-dialog" aria-label="Фотография продукта в полном размере">{close}<span class="zoom-product-visual product-stage"><img id="zoom-image" class="product-cutout" alt="" width="1000" height="1000"></span></dialog>'''
 def page(path,title,content,page_type='content',category=0,list_page=1,description='',hero=False):
     folder=OUT/path;folder.mkdir(parents=True,exist_ok=True)
     depth=len([x for x in str(path).split('/') if x and x!='.']);prefix='../'*depth or './'
@@ -56,12 +76,12 @@ def page(path,title,content,page_type='content',category=0,list_page=1,descripti
         p=next((p for p in PRODUCTS if path_product(p).strip('/')==path.strip('/')),None)
         if p:schema={'@context':'https://schema.org','@type':'Product','name':p['name'],'sku':p['sku'] or str(p['id']),'description':p['description'] or p['name'],'image':[SITE+i['localLarge'] for i in p['images']],'url':canonical}
     schema_json=json.dumps(schema,ensure_ascii=False).replace('</','<\\/')
-    text=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f3efe6"><title>{e(title)} | WEST-EST</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{canonical}"><meta property="og:type" content="website"><meta property="og:title" content="{e(title)} | WEST-EST"><meta property="og:description" content="{e(desc)}"><meta property="og:image" content="{SITE}assets/og.jpg"><meta property="og:url" content="{canonical}"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">{preload}<link rel="preload" href="{prefix}assets/fonts/prata.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="{prefix}assets/styles.css"><script type="application/ld+json">{schema_json}</script><script src="{prefix}assets/app.js" defer></script></head><body data-page="{page_type}" data-category="{category}" data-list-page="{list_page}">{header(prefix,page_type)}<main id="main">{body}</main>{footer(prefix)}{dialogs(prefix)}</body></html>'''
+    text=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f3efe6"><title>{e(title)} | WEST-EST</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{canonical}"><meta property="og:type" content="website"><meta property="og:title" content="{e(title)} | WEST-EST"><meta property="og:description" content="{e(desc)}"><meta property="og:image" content="{SITE}assets/og.jpg"><meta property="og:url" content="{canonical}"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">{preload}<link rel="preload" href="{prefix}assets/fonts/prata.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="{prefix}assets/styles.css?v={CSS_VERSION}"><script type="application/ld+json">{schema_json}</script><script src="{prefix}assets/app.js?v={JS_VERSION}" defer></script></head><body data-page="{page_type}" data-category="{category}" data-list-page="{list_page}">{header(prefix,page_type)}<main id="main">{body}</main>{footer(prefix)}{dialogs(prefix)}</body></html>'''
     (folder/'index.html').write_text(text)
 
 def card(p,prefix):
     title=name(p);image=p['images'][0]['local'] if p['images'] else 'assets/placeholder.svg'
-    return f'''<article class="product-card"><div class="product-visual"><a href="{href(prefix,path_product(p))}" tabindex="-1" aria-hidden="true"><img src="{prefix}{image}" alt="{e(title)}" width="520" height="572" loading="lazy" decoding="async"></a><button class="quick-view" data-quick="{p['id']}" aria-label="Быстрый просмотр: {e(title)}">{icon('plus')}</button></div><div class="product-info"><span class="product-brand">{e(p['brand'] or 'WEST-EST')}</span><h3><a href="{href(prefix,path_product(p))}">{e(title)}</a></h3><div class="product-meta"><span>{'Арт. '+e(p['sku']) if p['sku'] else 'WEST-EST'}</span><span>{'Уточнить цену' if p['isInStock'] else 'Под заказ'}</span></div></div></article>'''
+    return f'''<article class="product-card"><div class="product-visual"><a class="product-stage" href="{href(prefix,path_product(p))}" tabindex="-1" aria-hidden="true">{media_image(image,prefix,title)}</a><button class="quick-view" data-quick="{p['id']}" aria-label="Быстрый просмотр: {e(title)}">{icon('plus')}</button></div><div class="product-info"><span class="product-brand">{e(p['brand'] or 'WEST-EST')}</span><h3><a href="{href(prefix,path_product(p))}">{e(title)}</a></h3><div class="product-meta"><span>{'Арт. '+e(p['sku']) if p['sku'] else 'WEST-EST'}</span><span>{'Уточнить цену' if p['isInStock'] else 'Под заказ'}</span></div></div></article>'''
 def breadcrumbs(prefix,items):return '<nav class="breadcrumbs" aria-label="Навигационная цепочка"><a href="'+prefix+'">Главная</a>'+''.join(' <span aria-hidden="true">/</span> '+(f'<a href="{href(prefix,p)}">{e(n)}</a>' if p else f'<span aria-current="page">{e(n)}</span>') for p,n in items)+'</nav>'
 def cat_tile(c,prefix,index):
     img=c.get('image') or next((p['images'][0]['local'] for p in PRODUCTS if c['id'] in p['categories'] and p['images']),'assets/placeholder.svg')
@@ -94,7 +114,7 @@ def product_content(p):
         cats=[CATS[id] for id in p['categories'] if id in CATS and id!=16]
         cat=cats[0] if cats else CATS[p['categories'][0]]
         images=p['images'];image=images[0]['localLarge'] if images else 'assets/placeholder.svg'
-        thumbs=''.join(f'<button data-gallery-src="{i["localLarge"]}" aria-label="Фото {n+1}" aria-pressed="{str(n==0).lower()}"><img src="{prefix}{i["local"]}" alt="" width="65" height="65" loading="lazy"></button>' for n,i in enumerate(images)) if len(images)>1 else ''
+        thumbs=''.join(f'<button data-gallery-src="{i["localLarge"]}" data-presentation="{e(media_style(i["local"]))}" aria-label="Фото {n+1}" aria-pressed="{str(n==0).lower()}"><span class="product-stage">{media_image(i["local"],prefix,size=65)}</span></button>' for n,i in enumerate(images)) if len(images)>1 else ''
         specs=[]
         for line in p['description'].splitlines():
             if ':' in line:
@@ -103,7 +123,7 @@ def product_content(p):
         spec_html='<dl class="product-specs">'+''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k,v in specs)+'</dl>' if specs else ''
         related=[x for x in PRODUCTS if x['id']!=p['id'] and cat['id'] in x['categories']][:4]
         catlinks=', '.join(f'<a href="{href(prefix,path_category(cc))}">{e(cc["displayName"])}</a>' for cc in cats)
-        return f'''<div class="wrap">{breadcrumbs(prefix,[('shop/','Каталог'),(path_category(cat),cat['displayName']),('',name(p))])}<div class="product-detail"><div class="product-gallery"><button class="product-main-image" data-zoom aria-label="Увеличить фотографию"><img id="product-image" src="{prefix}{image}" alt="{e(p['name'])}" width="1200" height="1200" fetchpriority="high"><span class="zoom-label">{icon('search')} Увеличить</span></button><div class="gallery-thumbs">{thumbs}</div></div><div><p class="eyebrow">{e(p['brand'] or cat['displayName'])}</p><h1>{e(name(p))}</h1><div class="product-number"><span>{'Артикул '+e(p['sku']) if p['sku'] else 'Коллекция WEST-EST'}</span><span>{'Наличие уточняйте у менеджера' if p['isInStock'] else 'Поставка под заказ'}</span></div>{spec_html}<details class="description-details" open><summary>О продукте {icon('plus')}</summary><p class="product-description">{e(p['description'] or 'Подробности о продукте, фасовке и условиях поставки уточните у менеджера.')}</p></details><p class="small muted">Категория: {catlinks}</p><div class="product-enquiry"><div class="button-row"><a class="btn" href="{TG}" target="_blank" rel="noopener">Уточнить цену {icon('diagonal')}</a><a class="text-link" href="tel:+375296500536">Позвонить {icon()}</a></div><p>Сообщите менеджеру название{' или артикул '+e(p['sku']) if p['sku'] else ' продукта'}, чтобы уточнить цену, наличие и условия поставки.</p></div></div></div><section class="related-section"><div class="section-head"><div><p class="eyebrow">ПРОДОЛЖИТЕ ЗНАКОМСТВО</p><h2>Из этой же коллекции</h2></div>{link(prefix,path_category(cat),'Все продукты')}</div><div class="products-grid">{''.join(card(x,prefix) for x in related)}</div></section></div>'''
+        return f'''<div class="wrap">{breadcrumbs(prefix,[('shop/','Каталог'),(path_category(cat),cat['displayName']),('',name(p))])}<div class="product-detail"><div class="product-gallery"><button class="product-main-image" data-zoom aria-label="Увеличить фотографию"><span class="product-stage">{media_image(image,prefix,p["name"],loading="eager",size=1200).replace('class="product-cutout','id="product-image" class="product-cutout')}</span><span class="zoom-label">{icon('search')} Увеличить</span></button><div class="gallery-thumbs">{thumbs}</div></div><div><p class="eyebrow">{e(p['brand'] or cat['displayName'])}</p><h1>{e(name(p))}</h1><div class="product-number"><span>{'Артикул '+e(p['sku']) if p['sku'] else 'Коллекция WEST-EST'}</span><span>{'Наличие уточняйте у менеджера' if p['isInStock'] else 'Поставка под заказ'}</span></div>{spec_html}<details class="description-details" open><summary>О продукте {icon('plus')}</summary><p class="product-description">{e(p['description'] or 'Подробности о продукте, фасовке и условиях поставки уточните у менеджера.')}</p></details><p class="small muted">Категория: {catlinks}</p><div class="product-enquiry"><div class="button-row"><a class="btn" href="{TG}" target="_blank" rel="noopener">Уточнить цену {icon('diagonal')}</a><a class="text-link" href="tel:+375296500536">Позвонить {icon()}</a></div><p>Сообщите менеджеру название{' или артикул '+e(p['sku']) if p['sku'] else ' продукта'}, чтобы уточнить цену, наличие и условия поставки.</p></div></div></div><section class="related-section"><div class="section-head"><div><p class="eyebrow">ПРОДОЛЖИТЕ ЗНАКОМСТВО</p><h2>Из этой же коллекции</h2></div>{link(prefix,path_category(cat),'Все продукты')}</div><div class="products-grid">{''.join(card(x,prefix) for x in related)}</div></section></div>'''
     return render
 
 def contacts(prefix):
@@ -123,7 +143,7 @@ def main():
     (OUT/'assets/styles.css').write_text(css)
     shutil.copy2(ROOT/'src/app.js',OUT/'assets/app.js')
     compact={'categories':CATEGORIES,'products':[{k:p[k] for k in ['id','name','slug','sku','description','images','categories','brand','price','isInStock','date','sourceOrder']} for p in PRODUCTS]}
-    for p in compact['products']:p['images']=[{k:i[k] for k in ['local','localLarge','alt']} for i in p['images']]
+    for p in compact['products']:p['images']=[{**{k:i[k] for k in ['local','localLarge','alt']},'presentation':media_style(i['local'])} for i in p['images']]
     (OUT/'assets/catalogue.json').write_text(json.dumps(compact,ensure_ascii=False,separators=(',',':')))
     page('', 'Продукты из Италии. Вкус начинается с происхождения',home,'home',hero=True,description='WEST-EST: паста, оливковое масло, сыры, томаты и деликатесы. Коллекция продуктов для вашей кухни и бизнеса. Минск, Беларусь.')
     page('shop','Каталог продуктов',catalog_content(), 'catalog')
