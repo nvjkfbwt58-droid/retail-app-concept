@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nvjkfbwt58-droid.github.io/retail-app-concept/west-est/sitemap.xml
