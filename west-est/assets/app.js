@@ -8,11 +8,12 @@
   const url = path => new URL(path, root).href;
   const productUrl = p => url(`product/${encodeURIComponent(p.slug)}/`);
   const catName = c => c.displayName || c.name;
-  const niceName = p => p.name.replace(/^(?:Арт\.?\s*)?\d{3,6}\s*[:.\-]?\s*/iu, '').trim();
+  const niceName = p => p.name.replace(/^(?:(?:Арт|Атр)\.?\s*)?\d{3,6}\s*[:.\-]?\s*/iu, '').trim().replace(/(\d)\s*(кг|гр\.?|г|мл|л)(?=$|[\s,.;])/giu,(_,n,u)=>n+'\u00a0'+(u.toLowerCase().startsWith('гр')?'г':u.toLowerCase()));
+  const imageMarkup = (photo,alt='',large=false,eager=false) => `<img class="product-cutout${photo?.presentation?' is-normalized':''}" style="${esc(photo?.presentation||'')}" src="${url(photo?.[large?'localLarge':'local']||'assets/placeholder.svg')}" alt="${esc(alt)}" width="${large?1200:520}" height="${large?1200:520}" ${eager?'':'loading="lazy"'} decoding="async">`;
   const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е').normalize('NFKC');
   const plural = n => n%10===1 && n%100!==11 ? 'товар' : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 'товара' : 'товаров';
   let cataloguePromise;
-  const loadData = () => cataloguePromise ||= fetch(url('assets/catalogue.json')).then(r => { if(!r.ok) throw new Error('catalogue'); return r.json(); });
+  const loadData = () => cataloguePromise ||= fetch(url('assets/catalogue.json')+'?v='+(new URL(script.src).searchParams.get('v')||'1')).then(r => { if(!r.ok) throw new Error('catalogue'); return r.json(); });
   const closeDialog = dialog => { if(dialog?.open) dialog.close(); };
   $$('dialog').forEach(dialog => {
     dialog.addEventListener('click', e => { if(e.target === dialog) { const r=dialog.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) dialog.close(); } });
@@ -33,7 +34,7 @@
       const tokens=norm(q).split(/\s+/).filter(Boolean);
       const found=data.products.filter(p=>(!searchCat.value||p.categories.includes(Number(searchCat.value))) && tokens.every(t=>norm([p.name,p.sku,p.brand,p.description].join(' ')).includes(t)));
       const target=new URL('shop/',root);target.searchParams.set('q',q);if(searchCat.value)target.searchParams.set('category',searchCat.value);
-      results.innerHTML=found.length?found.slice(0,6).map(p=>`<a class="search-result" href="${productUrl(p)}"><img src="${url(p.images[0]?.local||'assets/placeholder.svg')}" alt="" width="58" height="65"><span><strong>${esc(niceName(p))}</strong><small>${esc(p.brand||'WEST-EST')}${p.sku?' · Арт. '+esc(p.sku):''}</small></span></a>`).join('')+`<a class="btn search-all" href="${target.href}">Все результаты (${found.length}) <span aria-hidden="true">↗</span></a>`:'<p class="search-hint" role="status">Ничего не найдено. Попробуйте другое название или артикул.</p>';
+      results.innerHTML=found.length?found.slice(0,6).map(p=>`<a class="search-result" href="${productUrl(p)}"><span class="search-product-visual product-stage">${imageMarkup(p.images[0])}</span><span><strong>${esc(niceName(p))}</strong><small>${esc(p.brand||'WEST-EST')}${p.sku?' · Арт. '+esc(p.sku):''}</small></span></a>`).join('')+`<a class="btn search-all" href="${target.href}">Все результаты (${found.length}) <span aria-hidden="true">↗</span></a>`:'<p class="search-hint" role="status">Ничего не найдено. Попробуйте другое название или артикул.</p>';
     }catch{results.innerHTML=`<p class="search-hint">Не удалось загрузить поиск. <a class="text-link" href="${url('shop/')}">Открыть каталог</a></p>`;}
   }
   $$('[data-open-search]').forEach(b=>b.addEventListener('click',()=>{searchDialog.showModal();searchInput.focus();loadData().catch(()=>{});}));
@@ -41,18 +42,18 @@
   $('#global-search-form')?.addEventListener('submit',e=>{e.preventDefault();const target=new URL('shop/',root);if(searchInput.value.trim())target.searchParams.set('q',searchInput.value.trim());if(searchCat.value)target.searchParams.set('category',searchCat.value);location.assign(target.href);});
   function card(p) {
     const name=niceName(p), image=p.images[0]?.local||'assets/placeholder.svg';
-    return `<article class="product-card"><div class="product-visual"><a href="${productUrl(p)}" tabindex="-1" aria-hidden="true"><img src="${url(image)}" width="520" height="572" alt="${esc(name)}" loading="lazy" decoding="async"></a><button class="quick-view" data-quick="${p.id}" aria-label="Быстрый просмотр: ${esc(name)}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="product-info"><span class="product-brand">${esc(p.brand||'WEST-EST')}</span><h3><a href="${productUrl(p)}">${esc(name)}</a></h3><div class="product-meta"><span>${p.sku?'Арт. '+esc(p.sku):'WEST-EST'}</span><span>${p.isInStock?'Уточнить цену':'Под заказ'}</span></div></div></article>`;
+    return `<article class="product-card"><div class="product-visual"><a class="product-stage" href="${productUrl(p)}" tabindex="-1" aria-hidden="true">${imageMarkup(p.images[0],name)}</a><button class="quick-view" data-quick="${p.id}" aria-label="Быстрый просмотр: ${esc(name)}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="product-info"><span class="product-brand">${esc(p.brand||'WEST-EST')}</span><h3><a href="${productUrl(p)}">${esc(name)}</a></h3><div class="product-meta"><span>${p.sku?'Арт. '+esc(p.sku):'WEST-EST'}</span><span>${p.isInStock?'Уточнить цену':'Под заказ'}</span></div></div></article>`;
   }
   document.addEventListener('click',async e=>{
     const btn=e.target.closest('[data-quick]');if(!btn)return;
     const dialog=$('#quick-dialog');btn.disabled=true;
     try{const data=await loadData(),p=data.products.find(p=>p.id===Number(btn.dataset.quick));if(!p)return;
-      $('#quick-content').innerHTML=`<div class="quick-dialog-inner"><img class="quick-dialog-img" src="${url(p.images[0]?.localLarge||'assets/placeholder.svg')}" alt="${esc(niceName(p))}" width="500" height="500"><div><span class="eyebrow">${esc(p.brand||'Коллекция WEST-EST')}</span><h2 id="quick-title">${esc(niceName(p))}</h2><p class="muted">${p.sku?'Артикул '+esc(p.sku):''}</p><p class="product-description">${esc(p.description||'Подробности о продукте, фасовке и условиях поставки уточните у менеджера.')}</p><a class="btn" href="${productUrl(p)}">Подробнее о продукте <span aria-hidden="true">↗</span></a><p class="muted">Цену и наличие уточняйте у менеджера.</p></div></div>`;
+      $('#quick-content').innerHTML=`<div class="quick-dialog-inner"><div class="quick-product-visual product-stage">${imageMarkup(p.images[0],niceName(p),true,true)}</div><div><span class="eyebrow">${esc(p.brand||'Коллекция WEST-EST')}</span><h2 id="quick-title">${esc(niceName(p))}</h2><p class="muted">${p.sku?'Артикул '+esc(p.sku):''}</p><p class="product-description">${esc(p.description||'Подробности о продукте, фасовке и условиях поставки уточните у менеджера.')}</p><a class="btn" href="${productUrl(p)}">Подробнее о продукте <span aria-hidden="true">↗</span></a><p class="muted">Цену и наличие уточняйте у менеджера.</p></div></div>`;
       dialog.showModal();
     }catch{location.assign(btn.closest('.product-card').querySelector('h3 a').href);}finally{btn.disabled=false;}
   });
-  $$('[data-gallery-src]').forEach(b=>b.addEventListener('click',()=>{const image=$('#product-image');image.src=url(b.dataset.gallerySrc);$$('[data-gallery-src]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
-  $('[data-zoom]')?.addEventListener('click',()=>{const main=$('#product-image'),zoom=$('#zoom-image');zoom.src=main.src;zoom.alt=main.alt;$('#image-dialog').showModal();});
+  $$('[data-gallery-src]').forEach(b=>b.addEventListener('click',()=>{const image=$('#product-image');image.src=url(b.dataset.gallerySrc);image.style.cssText=b.dataset.presentation||'';image.classList.toggle('is-normalized',!!b.dataset.presentation);$$('[data-gallery-src]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+  $('[data-zoom]')?.addEventListener('click',()=>{const main=$('#product-image'),zoom=$('#zoom-image');zoom.src=main.src;zoom.alt=main.alt;zoom.style.cssText=main.style.cssText;zoom.classList.toggle('is-normalized',main.classList.contains('is-normalized'));$('#image-dialog').showModal();});
   $('[data-load-map]')?.addEventListener('click',e=>{const panel=e.currentTarget.closest('.contact-map');const frame=document.createElement('iframe');frame.title='Склад WEST-EST, Минск, улица Красная, 7';frame.src=panel.dataset.map;frame.referrerPolicy='no-referrer-when-downgrade';frame.allowFullscreen=true;panel.replaceChildren(frame);});
   const catalogGrid=$('#catalog-grid');
   if(catalogGrid) initCatalogue();
