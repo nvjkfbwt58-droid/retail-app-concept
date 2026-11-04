@@ -1,0 +1,86 @@
+{
+  "source": "https://westestminsk.by/",
+  "observedDate": "2026-11-04",
+  "uniqueProducts": 205,
+  "categoryRoutes": 14,
+  "categoryProductAssignments": 209,
+  "countExplanation": "Four products belong to both the Uncategorized HTML category and their actual category. The Store API suppresses the default Uncategorized taxonomy in individual product categories; IDs38807,38805,38896,38898 restored from live category HTML.",
+  "functionalities": [
+    {
+      "feature": "Home and shop category navigation",
+      "details": "14 category routes, exact original slugs preserved."
+    },
+    {
+      "feature": "Product search",
+      "details": "Live suggestions (old limit6), full product search results, category restriction."
+    },
+    {
+      "feature": "Sorting",
+      "details": "Default/menu order, popularity, latest, price ascending, price descending. No prices shown; all ratings and review counts zero."
+    },
+    {
+      "feature": "Display modes",
+      "details": "Category grids2/3/4 columns and list."
+    },
+    {
+      "feature": "Pagination",
+      "details": "Old category pages show12 products per page."
+    },
+    {
+      "feature": "Product quick view",
+      "details": "Modal triggered from cards."
+    },
+    {
+      "feature": "Product details",
+      "details": "Title, SKU when supplied, category links, gallery/zoom, description accordion, related products. Supplemental inline description photographs imported into gallery."
+    },
+    {
+      "feature": "Contact page",
+      "details": "Office/warehouse addresses, four telephone links, email link, Google Maps warehouse embed."
+    },
+    {
+      "feature": "Telegram chat",
+      "details": "https://telegram.me/westestminsk"
+    }
+  ],
+  "absentFunctionality": [
+    "No public cart",
+    "No public checkout",
+    "No payment integration",
+    "No customer login route in navigation",
+    "No contact form (only search forms)"
+  ],
+  "commerce": {
+    "isPurchasableCount": 0,
+    "displayedPriceCount": 0,
+    "note": "The API returns price 0 as backend default. Original frontend shows no price; treat price as null, never display free or $0."
+  },
+  "contacts": {
+    "office": {
+      "address": "г. Минск, ул. Киселёва,12",
+      "phone": "+375296500785"
+    },
+    "warehouse": {
+      "address": "г. Минск, ул. Красная,7",
+      "phone": "+375293629606"
+    },
+    "manager": "+375296500536",
+    "additionalPhone": "+375296500481",
+    "email": "westest.minsk@gmail.com",
+    "hours": "ПН-ПТ09:00-17:00",
+    "telegram": "https://telegram.me/westestminsk",
+    "map": "https://maps.google.com/maps?q=%D0%B3.%D0%9C%D0%B8%D0%BD%D1%81%D0%BA%2C%20%D1%83%D0%BB.%20%D0%9A%D1%80%D0%B0%D1%81%D0%BD%D0%B0%D1%8F%207&t=m&z=16&output=embed&iwloc=near"
+  },
+  "assets": {
+    "productImages": 208,
+    "optimizedFiles": 416,
+    "failedDownloads": 0,
+    "smallBytes": 3051838,
+    "largeBytes": 10706308,
+    "categoryPhotos": 13
+  },
+  "limitations": [
+    "Public catalogue snapshot; automatic synchronization with original WordPress not configured. Admin/backend private data cannot be audited with public access.",
+    "The source contains incomplete product descriptions and conflicting weight/SKU values in some cards; imported source text preserved rather than fabricated."
+  ]
+}

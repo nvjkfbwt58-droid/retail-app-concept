@@ -1,0 +1,61 @@
+name: Publish WEST-EST
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - '.github/workflows/west-est.yml'
+      - 'west-est-build-trigger.txt'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: west-est-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare public catalogue media
+        run: |
+          python -m pip install 'Pillow==11.3.0'
+          python west-est/scripts/prepare_assets.py
+      - name: Build and verify every route
+        run: |
+          python west-est/scripts/build.py
+          python west-est/scripts/check_site.py
+          node --check west-est/src/app.js
+      - name: Preserve existing Pages and add WEST-EST
+        run: |
+          git fetch origin gh-pages --depth=1
+          git worktree add /tmp/west-est-pages origin/gh-pages
+          mkdir -p /tmp/west-est-pages/west-est
+          rsync -a --delete west-est/dist/ /tmp/west-est-pages/west-est/
+          touch /tmp/west-est-pages/.nojekyll
+          git -C /tmp/west-est-pages config user.name 'github-actions[bot]'
+          git -C /tmp/west-est-pages config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/west-est-pages add -- west-est .nojekyll
+          if ! git -C /tmp/west-est-pages diff --cached --quiet; then
+            git -C /tmp/west-est-pages commit -m 'Publish optimized WEST-EST catalogue'
+            git -C /tmp/west-est-pages push origin HEAD:gh-pages
+          fi
+      - name: Upload complete Pages site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/west-est-pages
+          include-hidden-files: true
+      - name: Deploy complete Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4

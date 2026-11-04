@@ -1,0 +1,11 @@
+{
+  "products": 205,
+  "categories": 14,
+  "images": 208,
+  "imagesFailed": [],
+  "optimizedImageBytes": 13758146,
+  "allNonPurchasable": true,
+  "pricesShown": 0,
+  "sourceApiCategories": 13,
+  "categoryAssignments": 209
+}
