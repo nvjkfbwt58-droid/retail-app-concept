@@ -28,6 +28,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Restore published product media
+        run: |
+          git fetch origin gh-pages --depth=1
+          git worktree add /tmp/west-est-pages origin/gh-pages
+          for media_dir in products categories; do
+            mkdir -p "west-est/dist/assets/$media_dir"
+            if [ -d "/tmp/west-est-pages/west-est/assets/$media_dir" ]; then
+              rsync -a "/tmp/west-est-pages/west-est/assets/$media_dir/" "west-est/dist/assets/$media_dir/"
+            fi
+          done
       - name: Prepare public catalogue media
         run: |
           python -m pip install 'Pillow==11.3.0'
@@ -39,8 +49,6 @@ jobs:
           node --check west-est/src/app.js
       - name: Preserve existing Pages and add WEST-EST
         run: |
-          git fetch origin gh-pages --depth=1
-          git worktree add /tmp/west-est-pages origin/gh-pages
           mkdir -p /tmp/west-est-pages/west-est
           rsync -a --delete west-est/dist/ /tmp/west-est-pages/west-est/
           touch /tmp/west-est-pages/.nojekyll
