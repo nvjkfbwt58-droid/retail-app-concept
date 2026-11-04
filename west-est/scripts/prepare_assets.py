@@ -27,7 +27,7 @@ def product(job):
         im=image.copy();im.thumbnail((size,size),Image.Resampling.LANCZOS)
         path=ROOT/'dist'/dest;path.parent.mkdir(parents=True,exist_ok=True);im.save(path,'WEBP',quality=quality,method=6)
 def main():
-    jobs={i['src']:(i['src'],i['local'],i['localLarge']) for p in DATA['products'] for i in p['images']}
+    jobs={i['local']:(i['src'],i['local'],i['localLarge']) for p in DATA['products'] for i in p['images']}
     with ThreadPoolExecutor(max_workers=8) as pool:
         futures=[pool.submit(product,job) for job in jobs.values()]
         for n,future in enumerate(as_completed(futures),1):
